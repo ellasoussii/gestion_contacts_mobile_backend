@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/contact.dart';
 
 class EditContactPage extends StatefulWidget {
-  final Map<String, String> contact;
+  final Contact contact;
 
   const EditContactPage({super.key, required this.contact});
 
@@ -16,8 +17,8 @@ class _EditContactPageState extends State<EditContactPage> {
   @override
   void initState() {
     super.initState();
-    _name = TextEditingController(text: widget.contact['name']);
-    _phone = TextEditingController(text: widget.contact['phone']);
+    _name = TextEditingController(text: widget.contact.name);
+    _phone = TextEditingController(text: widget.contact.phone);
   }
 
   @override
@@ -34,10 +35,14 @@ class _EditContactPageState extends State<EditContactPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context, {
-                  'name': _name.text,
-                  'phone': _phone.text,
-                });
+                Navigator.pop(
+                  context,
+                  Contact(
+                    id: widget.contact.id,
+                    name: _name.text,
+                    phone: _phone.text,
+                  ),
+                );
               },
               child: const Text('Enregistrer'),
             ),

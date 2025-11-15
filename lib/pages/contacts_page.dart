@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
+import '../models/contact.dart';
 import 'add_contact_page.dart';
 import 'edit_contact_page.dart';
 import 'delete_contact_page.dart';
@@ -11,18 +13,32 @@ class ContactsPage extends StatefulWidget {
 }
 
 class _ContactsPageState extends State<ContactsPage> {
-  List<Map<String, String>> contacts = [];
+  List<Contact> contacts = [];
 
-  void _addContact(Map<String, String> contact) {
-    setState(() => contacts.add(contact));
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
   }
 
-  void _editContact(int index, Map<String, String> updated) {
-    setState(() => contacts[index] = updated);
+  void _loadContacts() async {
+    final data = await DatabaseHelper.instance.getContacts();
+    setState(() => contacts = data);
   }
 
-  void _deleteContact(int index) {
-    setState(() => contacts.removeAt(index));
+  void _addContact(Contact contact) async {
+    await DatabaseHelper.instance.addContact(contact);
+    _loadContacts();
+  }
+
+  void _editContact(Contact contact) async {
+    await DatabaseHelper.instance.updateContact(contact);
+    _loadContacts();
+  }
+
+  void _deleteContact(int id) async {
+    await DatabaseHelper.instance.deleteContact(id);
+    _loadContacts();
   }
 
   @override
@@ -32,9 +48,10 @@ class _ContactsPageState extends State<ContactsPage> {
       body: ListView.builder(
         itemCount: contacts.length,
         itemBuilder: (context, index) {
+          final contact = contacts[index];
           return ListTile(
-            title: Text(contacts[index]['name'] ?? ''),
-            subtitle: Text(contacts[index]['phone'] ?? ''),
+            title: Text(contact.name),
+            subtitle: Text(contact.phone),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -44,10 +61,10 @@ class _ContactsPageState extends State<ContactsPage> {
                     final updated = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => EditContactPage(contact: contacts[index]),
+                        builder: (_) => EditContactPage(contact: contact),
                       ),
                     );
-                    if (updated != null) _editContact(index, updated);
+                    if (updated != null) _editContact(updated);
                   },
                 ),
                 IconButton(
@@ -56,10 +73,10 @@ class _ContactsPageState extends State<ContactsPage> {
                     final confirm = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DeleteContactPage(contact: contacts[index]),
+                        builder: (_) => DeleteContactPage(contact: contact),
                       ),
                     );
-                    if (confirm == true) _deleteContact(index);
+                    if (confirm == true) _deleteContact(contact.id!);
                   },
                 ),
               ],

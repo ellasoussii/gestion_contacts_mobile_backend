@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/contact.dart';
 
 class DeleteContactPage extends StatelessWidget {
-  final Map<String, String> contact;
+  final Contact contact;
 
   const DeleteContactPage({super.key, required this.contact});
 
@@ -13,7 +14,7 @@ class DeleteContactPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Supprimer ${contact['name']} ?', style: const TextStyle(fontSize: 18)),
+            Text('Supprimer ${contact.name} ?', style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
@@ -30,3 +31,4 @@ class DeleteContactPage extends StatelessWidget {
     );
   }
 }
+

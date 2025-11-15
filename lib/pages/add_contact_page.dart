@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/contact.dart';
 
 class AddContactPage extends StatefulWidget {
   const AddContactPage({super.key});
@@ -32,10 +33,12 @@ class _AddContactPageState extends State<AddContactPage> {
             ElevatedButton(
               onPressed: () {
                 if (_name.text.isNotEmpty && _phone.text.isNotEmpty) {
-                  Navigator.pop(context, {
-                    'name': _name.text,
-                    'phone': _phone.text,
-                  });
+                  Navigator.pop(
+                      context,
+                      Contact(
+                        name: _name.text,
+                        phone: _phone.text,
+                      ));
                 }
               },
               child: const Text('Ajouter'),

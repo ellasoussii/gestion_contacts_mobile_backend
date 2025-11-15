@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/db_helper.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -8,14 +9,14 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  void _register() {
-    if (_nameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty) {
+  void _register() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       showDialog(
         context: context,
         builder: (_) => const AlertDialog(
@@ -23,21 +24,36 @@ class _SignupPageState extends State<SignupPage> {
           content: Text('Veuillez remplir tous les champs.'),
         ),
       );
-    } else {
+      return;
+    }
+
+    try {
+      // Ajouter l'utilisateur dans SQLite
+      await DatabaseHelper.instance.addUser(email, password);
+
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Inscription réussie ✅'),
-          content: Text('Bienvenue, ${_nameController.text}!'),
+          content: Text('Bienvenue, $email !'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
+                Navigator.pop(context); // fermer la dialog
+                Navigator.pop(context); // revenir à LoginPage
               },
               child: const Text('OK'),
             ),
           ],
+        ),
+      );
+    } catch (e) {
+      // Si l'email existe déjà (unique)
+      showDialog(
+        context: context,
+        builder: (_) => const AlertDialog(
+          title: Text('Erreur'),
+          content: Text("Cet email existe déjà."),
         ),
       );
     }
@@ -53,22 +69,20 @@ class _SignupPageState extends State<SignupPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nom complet'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _emailController,
+              controller: emailController,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: _passwordController,
+              controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: 'Mot de passe'),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _register, child: const Text('Créer un compte')),
+            ElevatedButton(
+              onPressed: _register,
+              child: const Text('Créer un compte'),
+            ),
           ],
         ),
       ),
