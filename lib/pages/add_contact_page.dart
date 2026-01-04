@@ -1,9 +1,8 @@
-// pages/add_contact_page.dart
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/contact.dart';
-import '../database/db_helper.dart';
+import '../services/api_service.dart';
 
 class AddContactPage extends StatefulWidget {
   final int userId;
@@ -49,19 +48,7 @@ class _AddContactPageState extends State<AddContactPage> {
 
     if (name.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error, color: Colors.white),
-              SizedBox(width: 12),
-              Text("Nom et téléphone sont obligatoires !", style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-        ),
+        const SnackBar(content: Text("Nom et téléphone sont obligatoires !"), backgroundColor: Colors.red),
       );
       return;
     }
@@ -75,10 +62,11 @@ class _AddContactPageState extends State<AddContactPage> {
       photo: imageFile?.path,
     );
 
-    final int newId = await DatabaseHelper.instance.addContact(contact);
+    final created = await ApiService.addContact(contact);
+
     if (!mounted) return;
 
-    Navigator.pop(context, contact.copyWith(id: newId));
+    Navigator.pop(context, created);
   }
 
   @override
@@ -109,50 +97,28 @@ class _AddContactPageState extends State<AddContactPage> {
               ),
               const SizedBox(height: 20),
 
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom ", border: OutlineInputBorder())),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom")),
               const SizedBox(height: 12),
-              TextField(controller: surnameController, decoration: const InputDecoration(labelText: "Prénom", border: OutlineInputBorder())),
+              TextField(controller: surnameController, decoration: const InputDecoration(labelText: "Prénom")),
               const SizedBox(height: 12),
-              TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Téléphone ", border: OutlineInputBorder())),
+              TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Téléphone")),
               const SizedBox(height: 12),
 
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      birthdate == null ? "Date de naissance " : "Date : $birthdate",
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    child: Text(birthdate == null ? "Date de naissance" : "Date : $birthdate"),
                   ),
                   ElevatedButton(onPressed: pickDate, child: const Text("Choisir")),
                 ],
               ),
 
               const SizedBox(height: 40),
-
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56), elevation: 3),
-                child: const Text("Ajouter le contact", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
+              ElevatedButton(onPressed: _save, child: const Text("Ajouter le contact")),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-extension on Contact {
-  Contact copyWith({int? id}) {
-    return Contact(
-      id: id ?? this.id,
-      userId: userId,
-      name: name,
-      surname: surname,
-      phone: phone,
-      birthdate: birthdate,
-      photo: photo,
     );
   }
 }

@@ -1,8 +1,6 @@
-// pages/signup_page.dart
 import 'package:flutter/material.dart';
-import '../database/db_helper.dart';
 import '../models/user.dart';
-import './login_page.dart';        // ← IMPORTANT : on importe la page login
+import '../services/api_service.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -21,35 +19,31 @@ class _SignupPageState extends State<SignupPage> {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
+    final confirm = confirmPasswordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
       _showError("Veuillez remplir tous les champs.");
       return;
     }
 
-    if (password != confirmPassword) {
+    if (password != confirm) {
       _showError("Les mots de passe ne correspondent pas.");
       return;
     }
 
-    final existing = await DatabaseHelper.instance.getUserByEmail(email);
-    if (existing != null) {
-      _showError("Cet email existe déjà.");
-      return;
-    }
-
     final user = User(name: name, email: email, password: password);
-    await DatabaseHelper.instance.addUser(user);
+    final createdUser = await ApiService.signup(user);
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Inscription réussie ! Bienvenue $name")),
-    );
-
-    // Retour automatique à la page de connexion
-    Navigator.pop(context);
+    if (createdUser != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Inscription réussie ! Bienvenue ${createdUser.name}")),
+      );
+      Navigator.pop(context); // retour à la page de login
+    } else {
+      _showError("Erreur lors de l'inscription. Email peut-être déjà utilisé.");
+    }
   }
 
   void _showError(String msg) {
@@ -58,9 +52,7 @@ class _SignupPageState extends State<SignupPage> {
       builder: (_) => AlertDialog(
         title: const Text("Erreur"),
         content: Text(msg),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
       ),
     );
   }
@@ -78,82 +70,16 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Inscription")),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const SizedBox(height: 40),
-
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Nom complet",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: "Email",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Mot de passe",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Confirmer le mot de passe",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock_outline),
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            ElevatedButton(
-              onPressed: _register,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 52),
-              ),
-              child: const Text("Créer un compte", style: TextStyle(fontSize: 18)),
-            ),
-
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom")),
+            TextField(controller: emailController, decoration: const InputDecoration(labelText: "Email")),
+            TextField(controller: passwordController, obscureText: true, decoration: const InputDecoration(labelText: "Mot de passe")),
+            TextField(controller: confirmPasswordController, obscureText: true, decoration: const InputDecoration(labelText: "Confirmer")),
             const SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("J'ai déjà un compte ? "),
-                GestureDetector(
-  onTap: () => Navigator.pop(context),
-  child: Text(
-    "Se connecter",
-    style: TextStyle(
-      color: Theme.of(context).colorScheme.primary,   // ← même couleur que le bouton
-      fontWeight: FontWeight.bold,
-      decoration: TextDecoration.underline,
-    ),
-  ),
-),
-              ],
-            ),
+            ElevatedButton(onPressed: _register, child: const Text("Créer un compte")),
           ],
         ),
       ),

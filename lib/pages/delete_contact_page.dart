@@ -21,24 +21,13 @@ class DeleteContactPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 25),
-
-              // BOUTON SUPPRIMER
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  minimumSize: const Size(double.infinity, 45),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, minimumSize: const Size(double.infinity, 45)),
                 child: const Text("Supprimer"),
               ),
-
               const SizedBox(height: 10),
-
-              // ANNULER
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Annuler"),
-              ),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Annuler")),
             ],
           ),
         ),

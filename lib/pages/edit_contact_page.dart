@@ -1,4 +1,3 @@
-// pages/edit_contact_page.dart
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -16,6 +15,7 @@ class _EditContactPageState extends State<EditContactPage> {
   late TextEditingController nameController;
   late TextEditingController surnameController;
   late TextEditingController phoneController;
+
   String? birthdate;
   File? imageFile;
 
@@ -26,22 +26,19 @@ class _EditContactPageState extends State<EditContactPage> {
     surnameController = TextEditingController(text: widget.contact.surname ?? '');
     phoneController = TextEditingController(text: widget.contact.phone);
     birthdate = widget.contact.birthdate;
-    if (widget.contact.photo != null) imageFile = File(widget.contact.photo!);
+
+    if (widget.contact.photo != null) {
+      imageFile = File(widget.contact.photo!);
+    }
   }
 
   Future<void> pickDate() async {
-    DateTime initial = DateTime(2000);
-    if (birthdate != null) {
-      final parts = birthdate!.split('/');
-      if (parts.length == 3) {
-        final d = int.tryParse(parts[0]);
-        final m = int.tryParse(parts[1]);
-        final y = int.tryParse(parts[2]);
-        if (d != null && m != null && y != null) initial = DateTime(y, m, d);
-      }
-    }
-
-    final date = await showDatePicker(context: context, initialDate: initial, firstDate: DateTime(1900), lastDate: DateTime.now());
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
     if (date != null) {
       setState(() {
         birthdate = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
@@ -52,7 +49,9 @@ class _EditContactPageState extends State<EditContactPage> {
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) setState(() => imageFile = File(picked.path));
+    if (picked != null) {
+      setState(() => imageFile = File(picked.path));
+    }
   }
 
   void _save() {
@@ -61,24 +60,12 @@ class _EditContactPageState extends State<EditContactPage> {
 
     if (name.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error, color: Colors.white),
-              SizedBox(width: 12),
-              Text("Nom et téléphone sont obligatoires !", style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-        ),
+        const SnackBar(content: Text("Nom et téléphone sont obligatoires"), backgroundColor: Colors.red),
       );
       return;
     }
 
-    final updated = Contact(
+    final updatedContact = Contact(
       id: widget.contact.id,
       userId: widget.contact.userId,
       name: name,
@@ -88,7 +75,7 @@ class _EditContactPageState extends State<EditContactPage> {
       photo: imageFile?.path ?? widget.contact.photo,
     );
 
-    Navigator.pop(context, updated);
+    Navigator.pop(context, updatedContact);
   }
 
   @override
@@ -112,40 +99,25 @@ class _EditContactPageState extends State<EditContactPage> {
                 onTap: pickImage,
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: imageFile != null
-                      ? FileImage(imageFile!)
-                      : (widget.contact.photo != null ? FileImage(File(widget.contact.photo!)) : null),
-                  child: imageFile == null && widget.contact.photo == null ? const Icon(Icons.camera_alt, size: 32) : null,
+                  backgroundImage: imageFile != null ? FileImage(imageFile!) : null,
+                  child: imageFile == null ? const Icon(Icons.camera_alt, size: 32) : null,
                 ),
               ),
               const SizedBox(height: 20),
-
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom ", border: OutlineInputBorder())),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom", border: OutlineInputBorder())),
               const SizedBox(height: 12),
               TextField(controller: surnameController, decoration: const InputDecoration(labelText: "Prénom", border: OutlineInputBorder())),
               const SizedBox(height: 12),
-              TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Téléphone ", border: OutlineInputBorder())),
+              TextField(controller: phoneController, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: "Téléphone", border: OutlineInputBorder())),
               const SizedBox(height: 12),
-
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      birthdate == null ? "Date de naissance " : "Date : $birthdate",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
+                  Expanded(child: Text(birthdate == null ? "Date de naissance" : "Date : $birthdate")),
                   ElevatedButton(onPressed: pickDate, child: const Text("Choisir")),
                 ],
               ),
-
               const SizedBox(height: 40),
-
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56), elevation: 3),
-                child: const Text("Enregistrer les modifications", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
+              ElevatedButton(onPressed: _save, style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56)), child: const Text("Enregistrer", style: TextStyle(fontSize: 18))),
             ],
           ),
         ),

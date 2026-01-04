@@ -1,4 +1,3 @@
-// models/contact.dart
 class Contact {
   int? id;
   int userId;
@@ -18,27 +17,39 @@ class Contact {
     this.photo,
   });
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'user_id': userId,
-      'name': name,
-      'surname': surname,
-      'phone': phone,
-      'birthdate': birthdate,
-      'photo': photo,
+      "id": id,
+      "user_id": userId,
+      "name": name,
+      "surname": surname,
+      "phone": phone,
+      "birthdate": birthdate,
+      "photo": photo,
     };
   }
 
-  factory Contact.fromMap(Map<String, dynamic> map) {
+  factory Contact.fromJson(Map<String, dynamic> json) {
     return Contact(
-      id: map['id'] as int?,
-      userId: map['user_id'] as int,
-      name: map['name'] as String,
-      surname: map['surname'] as String?,
-      phone: map['phone'] as String,
-      birthdate: map['birthdate'] as String?,
-      photo: map['photo'] as String?,
+      id: json["id"],
+      userId: json["user_id"],
+      name: json["name"],
+      surname: json["surname"],
+      phone: json["phone"],
+      birthdate: json["birthdate"],
+      photo: json["photo"],
+    );
+  }
+
+  Contact copyWith({int? id}) {
+    return Contact(
+      id: id ?? this.id,
+      userId: userId,
+      name: name,
+      surname: surname,
+      phone: phone,
+      birthdate: birthdate,
+      photo: photo,
     );
   }
 }
